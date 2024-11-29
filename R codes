@@ -1,0 +1,55 @@
+# Load necessary libraries
+library(readxl)     
+library(dplyr)      
+library(ggplot2)     
+
+# Load the data
+file_path <- "path_to_your_file/Malnutrition_in_the_Refugee_Camp_-Data cleaning.xlsx"
+data <- read_excel(file_path)
+
+# Explore the data
+glimpse(data)        
+summary(data)       
+
+# Check for missing values
+missing_summary <- sapply(data, function(x) sum(is.na(x)))
+print(missing_summary)
+
+# Clean the data
+# Example: Remove rows with missing data
+cleaned_data <- data %>%
+  drop_na()
+
+# OR Fill missing values (replace with the median, for example)
+cleaned_data <- data %>%
+  mutate(across(where(is.numeric), ~ ifelse(is.na(.), median(., na.rm = TRUE), .)))
+
+# Descriptive analysis
+# Example: Calculate mean, median, and standard deviation for numerical columns
+descriptive_stats <- cleaned_data %>%
+  summarise(across(where(is.numeric), list(
+    mean = ~mean(., na.rm = TRUE),
+    median = ~median(., na.rm = TRUE),
+    sd = ~sd(., na.rm = TRUE)
+  )))
+
+print(descriptive_stats)
+
+# Visualization
+# Example 1: Bar plot for categorical data
+ggplot(cleaned_data, aes(x = factor(CategoricalColumn))) +
+  geom_bar() +
+  labs(title = "Bar Plot of Categorical Column", x = "Category", y = "Count")
+
+# Example 2: Histogram for numerical data
+ggplot(cleaned_data, aes(x = NumericalColumn)) +
+  geom_histogram(binwidth = 10, fill = "blue", color = "black") +
+  labs(title = "Histogram of Numerical Column", x = "Values", y = "Frequency")
+
+# Example 3: Boxplot for numerical data grouped by a category
+ggplot(cleaned_data, aes(x = factor(GroupingColumn), y = NumericalColumn)) +
+  geom_boxplot() +
+  labs(title = "Boxplot of Numerical Column by Group", x = "Group", y = "Values")
+
+# Save cleaned data for further analysis
+write.csv(cleaned_data, "Cleaned_Malnutrition_Data.csv", row.names = FALSE)
